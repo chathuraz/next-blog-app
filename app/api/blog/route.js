@@ -1,44 +1,118 @@
-import BlogItem from "@/Components/BlogItem";
-import { connectDB } from "@/lib/config/db";
-const { NextResponse } = require("next/server");
-import {writeFile} from 'fs/promises';
-import { title } from "process";
+import { NextResponse } from 'next/server'
+import { writeFile, mkdir } from 'fs/promises'
+import path from 'path'
+import connectDB from '@/lib/mongodb'
+import BlogModel from '@/lib/models/BlogModel'
 
-const LoadDB = async () => {
-    await connectDB();
-}
-
-LoadDB();
-
-
-export async function GET(request){
-    console.log("Blog Get Hit");
-    return NextResponse.json({msg:"API is working fine"})
-}
-
-export async function POST(request){
-    const formData = await request.formData();
-    const timestamp = Date.now();
-
-    const image = formData.get('image');
-    const imageByteData = await image.arrayBuffer();
-    const buffer = Buffer.from(imageByteData);
-    const path = `./public/${timestamp}_${image.name}`;
-    await writeFile(path, buffer);
-    const imgUrl = `/${timestamp}_${image.name}`;
+export async function POST(request) {
+  try {
+    console.log('API route called')
     
-        const blogData = {
-            title: `${formData.get('title')}`,
-            description: `${formData.get('description')}`,
-            category: `${formData.get('category')}`,
-            author: `${formData.get('author')}`,
-            image: `${imgUrl}`,
-            author_img: `${formData.get('author_img')}`,
-            
-        }
+    // Connect to MongoDB Atlas
+    await connectDB()
+    console.log('DB Connected')
+    
+    const formData = await request.formData()
+    
+    const file = formData.get('image')
+    const title = formData.get('title')
+    const description = formData.get('description')
+    const category = formData.get('category')
+    const author = formData.get('author')
+    const author_img = formData.get('author_img')
 
-        await BlogModel.create(blogData);
-        console.log("Blog Saved");
+    console.log('Received data:', { title, description, category, author })
 
-    return NextResponse.json({success:true, msg:"Blog Added Successfully"});
+    // Validate required fields
+    if (!title || !description) {
+      return NextResponse.json({
+        success: false,
+        msg: "Title and description are required"
+      }, { status: 400 })
+    }
+
+    let imagePath = null
+
+    // Handle image upload if file exists
+    if (file && file.size > 0) {
+      try {
+        // Create uploads directory if it doesn't exist
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads')
+        await mkdir(uploadDir, { recursive: true })
+
+        // Save image file
+        const bytes = await file.arrayBuffer()
+        const buffer = Buffer.from(bytes)
+        const filename = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+        const filepath = path.join(uploadDir, filename)
+        
+        await writeFile(filepath, buffer)
+        imagePath = `/uploads/${filename}`
+        console.log('Image saved:', imagePath)
+      } catch (imageError) {
+        console.error('Image upload error:', imageError)
+        return NextResponse.json({
+          success: false,
+          msg: "Error uploading image"
+        }, { status: 500 })
+      }
+    }
+
+    // Create blog data object for MongoDB
+    const blogData = {
+      title,
+      description,
+      category: category || 'Startup',
+      author: author || 'Alex Bennett',
+      author_img: author_img || '/author_img.png',
+      image: imagePath
+    }
+
+    console.log("Blog data created:", blogData)
+
+    // Save to MongoDB Atlas
+    try {
+      const savedBlog = await BlogModel.create(blogData)
+      console.log("Blog saved to MongoDB Atlas with ID:", savedBlog._id)
+      
+      return NextResponse.json({
+        success: true,
+        msg: "Blog saved to MongoDB Atlas successfully!",
+        data: savedBlog
+      })
+    } catch (dbError) {
+      console.error('Database save error:', dbError)
+      return NextResponse.json({
+        success: false,
+        msg: "Database error: " + dbError.message
+      }, { status: 500 })
+    }
+
+  } catch (error) {
+    console.error('API Error:', error)
+    return NextResponse.json({
+      success: false,
+      msg: "Server error: " + error.message
+    }, { status: 500 })
+  }
+}
+
+// GET method to retrieve blogs from MongoDB Atlas
+export async function GET() {
+  try {
+    await connectDB()
+    const blogs = await BlogModel.find({}).sort({ createdAt: -1 })
+    
+    return NextResponse.json({
+      success: true,
+      data: blogs,
+      count: blogs.length
+    })
+  } catch (error) {
+    console.error('Database fetch error:', error)
+    return NextResponse.json({
+      success: false,
+      msg: "Error fetching blogs: " + error.message
+    }, { status: 500 })
+  }
 }
