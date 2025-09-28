@@ -42,10 +42,45 @@ A modern, responsive blog application built with Next.js 15, featuring a clean d
 
 ## 🚀 Quick Deploy
 
-Deploy this application instantly to your preferred platform:
+> **⚠️ IMPORTANT: Before deploying, you MUST configure your MongoDB connection!**
+
+### 📋 Pre-deployment Requirements
+
+**1. MongoDB Setup**
+Before deploying this application, you need to set up MongoDB and configure the connection URL:
+
+1. **Create a MongoDB Database:**
+   - Use [MongoDB Atlas](https://www.mongodb.com/atlas) (recommended for cloud deployment)
+   - Or set up a local MongoDB instance
+
+2. **Get Your Connection URL:**
+   ```
+   mongodb+srv://<username>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority
+   ```
+
+3. **Create Environment File:**
+   Create a `.env.local` file in your project root and add:
+   ```env
+   MONGODB_URI=your_mongodb_connection_url_here
+   ```
+
+   **Example:**
+   ```env
+   MONGODB_URI=mongodb+srv://bloguser:mypassword@cluster0.example.mongodb.net/nextjs-blog?retryWrites=true&w=majority
+   ```
+
+4. **Environment Variables for Production:**
+   When deploying to platforms like Vercel, Netlify, or others, make sure to add the `MONGODB_URI` environment variable in your deployment platform's settings.
 
 ### Deploy to Vercel
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/chathuraz/next-blog-app)
+
+**Vercel Deployment Steps:**
+1. Click the deploy button above
+2. Connect your GitHub account
+3. In your Vercel dashboard, go to Settings → Environment Variables
+4. Add `MONGODB_URI` with your MongoDB connection string
+5. Redeploy the application
 
 ### Deploy to Netlify
 [![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/chathuraz/next-blog-app)
@@ -55,6 +90,7 @@ Deploy this application instantly to your preferred platform:
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn package manager
+- **MongoDB database** (Atlas or local instance)
 
 ### Installation
 
@@ -71,14 +107,25 @@ Deploy this application instantly to your preferred platform:
    yarn install
    ```
 
-3. **Run the development server**
+3. **Configure Environment Variables**
+   Create a `.env.local` file in the project root:
+   ```env
+   MONGODB_URI=mongodb+srv://your-username:your-password@cluster.mongodb.net/your-database-name?retryWrites=true&w=majority
+   ```
+   
+   **For local MongoDB:**
+   ```env
+   MONGODB_URI=mongodb://localhost:27017/nextjs-blog
+   ```
+
+4. **Run the development server**
    ```bash
    npm run dev
    # or
    yarn dev
    ```
 
-4. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Build for Production
@@ -87,6 +134,40 @@ Deploy this application instantly to your preferred platform:
 npm run build
 npm start
 ```
+
+## 🔧 MongoDB Configuration
+
+### Setting up MongoDB Atlas (Recommended)
+
+1. **Create Account**: Go to [MongoDB Atlas](https://www.mongodb.com/atlas) and create a free account
+2. **Create Cluster**: Create a new cluster (free tier available)
+3. **Create Database User**: Add a database user with read/write permissions
+4. **Whitelist IP**: Add your IP address to the IP whitelist (or use 0.0.0.0/0 for all IPs)
+5. **Get Connection String**: Copy your connection string and replace `<password>` with your user password
+
+### Environment Variables
+
+**Required Environment Variables:**
+```env
+MONGODB_URI=your_mongodb_connection_string
+```
+
+**Optional Environment Variables:**
+```env
+NEXTAUTH_SECRET=your_secret_key_here
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### Troubleshooting MongoDB Connection
+
+**Common Issues:**
+- ❌ **"Connection refused"**: Check if your IP is whitelisted in MongoDB Atlas
+- ❌ **"Authentication failed"**: Verify username and password in connection string
+- ❌ **"Timeout"**: Check network connectivity and firewall settings
+- ❌ **"Database not found"**: The database will be created automatically when first accessed
+
+**Testing Connection:**
+You can test your MongoDB connection by accessing any API route like `/api/blog` after starting the development server.
 
 ## 📁 Project Structure
 
