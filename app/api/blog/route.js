@@ -116,3 +116,42 @@ export async function GET() {
     }, { status: 500 })
   }
 }
+
+// DELETE method to delete a blog from MongoDB Atlas
+export async function DELETE(request) {
+  try {
+    await connectDB()
+    
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json({
+        success: false,
+        msg: "Blog ID is required"
+      }, { status: 400 })
+    }
+    
+    const deletedBlog = await BlogModel.findByIdAndDelete(id)
+    
+    if (!deletedBlog) {
+      return NextResponse.json({
+        success: false,
+        msg: "Blog not found"
+      }, { status: 404 })
+    }
+    
+    return NextResponse.json({
+      success: true,
+      msg: "Blog deleted successfully",
+      data: deletedBlog
+    })
+    
+  } catch (error) {
+    console.error('Database delete error:', error)
+    return NextResponse.json({
+      success: false,
+      msg: "Error deleting blog: " + error.message
+    }, { status: 500 })
+  }
+}
