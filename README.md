@@ -40,11 +40,9 @@ A modern, responsive blog application built with Next.js 15, featuring a clean d
 - **Component Architecture** - Modular, reusable React components
 - **Modern JavaScript** - ES6+ features and React Hooks
 
-## 🚀 Quick Deploy
+## 🚀 Pre-deployment Requirements
 
 > **⚠️ IMPORTANT: Before deploying, you MUST configure your MongoDB connection!**
-
-### 📋 Pre-deployment Requirements
 
 **1. MongoDB Setup**
 Before deploying this application, you need to set up MongoDB and configure the connection URL:
@@ -71,19 +69,6 @@ Before deploying this application, you need to set up MongoDB and configure the 
 
 4. **Environment Variables for Production:**
    When deploying to platforms like Vercel, Netlify, or others, make sure to add the `MONGODB_URI` environment variable in your deployment platform's settings.
-
-### Deploy to Vercel
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/chathuraz/next-blog-app)
-
-**Vercel Deployment Steps:**
-1. Click the deploy button above
-2. Connect your GitHub account
-3. In your Vercel dashboard, go to Settings → Environment Variables
-4. Add `MONGODB_URI` with your MongoDB connection string
-5. Redeploy the application
-
-### Deploy to Netlify
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/chathuraz/next-blog-app)
 
 ## 🛠️ Local Development
 
